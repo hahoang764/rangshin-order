@@ -29,6 +29,9 @@
   </div>
 
 <script>
+  if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
+}
   const WEBAPP = "https://script.google.com/macros/s/AKfycbzN7cKP4Xh3PxapvXtUKQHq2x4lszVzMzhnND-qYwLC5lUQuEhuU27CSIhrk1xpZtYeNg/exec";
 
   // ✅ Nếu đang chạy như APP (standalone) -> vào thẳng webapp (render y hệt)
@@ -64,4 +67,5 @@
   }
 </script>
 </body>
+
 </html>
