@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -7,7 +7,13 @@
   <meta name="theme-color" content="#ffffff">
   <title>RANGSHIN_Order</title>
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:0;background:#fff}
+    html,body{margin:0;height:100%;background:#fff;overflow:hidden}
+    /* màn app: iframe full màn */
+    #appWrap{display:none;width:100%;height:100%}
+    #appWrap iframe{border:0;width:100%;height:100%}
+
+    /* màn browser: hướng dẫn cài */
+    #installWrap{display:none;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
     .wrap{max-width:560px;margin:0 auto;padding:16px}
     .card{border:1px solid #eee;border-radius:16px;padding:14px}
     .btn{display:block;width:100%;padding:14px 16px;font-size:18px;border-radius:14px;border:0;background:#7a1f1f;color:#fff;font-weight:800}
@@ -17,56 +23,66 @@
     code{background:#f2f2f2;padding:2px 6px;border-radius:6px}
   </style>
 </head>
-<body>
-  <div class="wrap">
-    <div class="card">
-      <button class="btn" id="openNow">MỞ ĐẶT MÓN</button>
-      <button class="btn2" id="openChrome" style="display:none">MỞ BẰNG CHROME (để cài app)</button>
 
-      <div class="hint" id="hint"></div>
-      <div class="small" id="small"></div>
+<body>
+  <!-- ✅ Chế độ APP: không hiện link -->
+  <div id="appWrap">
+    <iframe id="appFrame" allow="clipboard-write"></iframe>
+  </div>
+
+  <!-- ✅ Chế độ BROWSER: để cài PWA -->
+  <div id="installWrap">
+    <div class="wrap">
+      <div class="card">
+        <button class="btn" id="openNow">MỞ ĐẶT MÓN</button>
+        <button class="btn2" id="openChrome" style="display:none">MỞ BẰNG CHROME (để cài app)</button>
+        <div class="hint" id="hint"></div>
+        <div class="small" id="small"></div>
+      </div>
     </div>
   </div>
 
 <script>
+  // ✅ SW (giữ lại nếu bạn đã thêm)
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/rangshin-order/sw.js");
   }
+
   const WEBAPP = "https://script.google.com/macros/s/AKfycbzN7cKP4Xh3PxapvXtUKQHq2x4lszVzMzhnND-qYwLC5lUQuEhuU27CSIhrk1xpZtYeNg/exec";
 
-  // ✅ Nếu đang chạy như APP (standalone) -> vào thẳng webapp (render y hệt)
   const isStandalone = window.matchMedia && window.matchMedia("(display-mode: standalone)").matches;
-  if (isStandalone) location.replace(WEBAPP);
 
-  // Detect in-app browsers (tương đối, nhưng đủ dùng)
+  // Detect in-app browsers
   const ua = navigator.userAgent || "";
-  const isFacebook = /FBAN|FBAV|Instagram/i.test(ua);
-  const isZalo = /Zalo/i.test(ua);
-  const isTelegram = /Telegram/i.test(ua);
-  const isMessenger = /Messenger/i.test(ua);
-  const isInApp = isFacebook || isZalo || isTelegram || isMessenger;
+  const isInApp = /Zalo|FBAN|FBAV|Instagram|Messenger|Telegram/i.test(ua);
 
-  const $hint = document.getElementById("hint");
-  const $small = document.getElementById("small");
-  const $btnChrome = document.getElementById("openChrome");
+  const appWrap = document.getElementById("appWrap");
+  const installWrap = document.getElementById("installWrap");
 
-  document.getElementById("openNow").onclick = () => location.href = WEBAPP;
-
-  if (isInApp) {
-    $btnChrome.style.display = "block";
-    $hint.innerHTML = "Bạn đang mở trong trình duyệt nhúng của ứng dụng chat. Muốn <b>cài app</b> thì hãy mở bằng <b>Chrome</b>.";
-    $small.innerHTML = "Mẹo: bấm <code>⋮</code> (góc phải) → <b>Mở bằng trình duyệt</b> / <b>Open in browser</b> nếu nút Chrome không chạy.";
-    // Nút này chỉ là “gợi ý” — không phải máy nào cũng ép mở Chrome được
-    $btnChrome.onclick = () => {
-      // mở tab mới, để người dùng chọn Chrome (nếu hệ cho phép)
-      window.open(location.href, "_blank");
-    };
+  if (isStandalone) {
+    // ✅ APP mode: dùng iframe để KHÔNG hiện thanh link
+    appWrap.style.display = "block";
+    document.getElementById("appFrame").src = WEBAPP;
   } else {
-    $hint.innerHTML = "Nếu muốn cài thành app: mở menu Chrome <code>⋮</code> → <b>Install app</b> / <b>Thêm vào màn hình chính</b>.";
-    $small.innerHTML = "Nếu không thấy, hãy mở trang này vài giây hoặc thử tải lại 1 lần.";
+    // ✅ Browser mode: show hướng dẫn cài
+    installWrap.style.display = "block";
+
+    const $hint = document.getElementById("hint");
+    const $small = document.getElementById("small");
+    const $btnChrome = document.getElementById("openChrome");
+
+    document.getElementById("openNow").onclick = () => location.assign(WEBAPP);
+
+    if (isInApp) {
+      $btnChrome.style.display = "block";
+      $hint.innerHTML = "Bạn đang mở trong trình duyệt nhúng. Muốn <b>cài app</b> hãy mở bằng <b>Chrome</b>.";
+      $small.innerHTML = "Bấm <code>⋮</code> → <b>Mở bằng trình duyệt</b> / <b>Open in browser</b>.";
+      $btnChrome.onclick = () => window.open(location.href, "_blank", "noopener,noreferrer");
+    } else {
+      $hint.innerHTML = "Muốn cài thành app: mở menu Chrome <code>⋮</code> → <b>Install app</b> / <b>Thêm vào màn hình chính</b>.";
+      $small.innerHTML = "Nếu không thấy, hãy chờ vài giây hoặc tải lại 1 lần.";
+    }
   }
 </script>
 </body>
-
 </html>
-
