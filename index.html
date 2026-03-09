@@ -1,89 +1,137 @@
 <!doctype html>
-<html>
+<html lang="vi">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ffffff">
   <title>RANGSHIN_Order</title>
-  <style>
-    html,body{margin:0;height:100%;background:#fff;overflow:hidden}
-    /* màn app: iframe full màn */
-    #appWrap{display:none;width:100%;height:100%}
-    #appWrap iframe{border:0;width:100%;height:100%}
 
-    /* màn browser: hướng dẫn cài */
-    #installWrap{display:none;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
-    .wrap{max-width:560px;margin:0 auto;padding:16px}
-    .card{border:1px solid #eee;border-radius:16px;padding:14px}
-    .btn{display:block;width:100%;padding:14px 16px;font-size:18px;border-radius:14px;border:0;background:#7a1f1f;color:#fff;font-weight:800}
-    .btn2{display:block;width:100%;padding:12px 16px;font-size:16px;border-radius:14px;border:1px solid #7a1f1f;background:#fff;color:#7a1f1f;font-weight:700;margin-top:10px}
-    .hint{margin-top:10px;line-height:1.45;color:#333}
-    .small{opacity:.7;font-size:13px;margin-top:8px}
-    code{background:#f2f2f2;padding:2px 6px;border-radius:6px}
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    #appFrame {
+      border: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #fff;
+    }
+
+    .fabWrap {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .fabBtn {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      background: #8b1e1e;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(0,0,0,.18);
+      cursor: pointer;
+    }
+
+    .fabBtn.secondary {
+      background: #fff;
+      color: #8b1e1e;
+      border: 1px solid #8b1e1e;
+    }
+
+    .hintBox {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: 70px;
+      z-index: 9999;
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      font: 15px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      display: none;
+    }
+
+    .hintBox b { color: #8b1e1e; }
+    .hintClose {
+      margin-top: 10px;
+      border: 0;
+      background: #8b1e1e;
+      color: #fff;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 700;
+    }
   </style>
 </head>
-
 <body>
-  <!-- ✅ Chế độ APP: không hiện link -->
-  <div id="appWrap">
-    <iframe id="appFrame" allow="clipboard-write"></iframe>
+
+  <iframe
+    id="appFrame"
+    allow="clipboard-write"
+    referrerpolicy="no-referrer"
+  ></iframe>
+
+  <div class="fabWrap">
+    <button class="fabBtn secondary" id="btnGuide">Cài app</button>
   </div>
 
-  <!-- ✅ Chế độ BROWSER: để cài PWA -->
-  <div id="installWrap">
-    <div class="wrap">
-      <div class="card">
-        <button class="btn" id="openNow">MỞ ĐẶT MÓN</button>
-        <button class="btn2" id="openChrome" style="display:none">MỞ BẰNG CHROME (để cài app)</button>
-        <div class="hint" id="hint"></div>
-        <div class="small" id="small"></div>
-      </div>
-    </div>
+  <div class="hintBox" id="hintBox">
+    <div id="hintText"></div>
+    <button class="hintClose" id="btnCloseHint">Đóng</button>
   </div>
 
-<script>
-  // ✅ SW (giữ lại nếu bạn đã thêm)
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/rangshin-order/sw.js");
-  }
-
-  const WEBAPP = "https://script.google.com/macros/s/AKfycbw88IlRHEkiGzJisfKoOcydSirEHrLoRnzV01vw5DYL8iO916c-1CqADa73fm4x-htj/exec";
-
-  const isStandalone = window.matchMedia && window.matchMedia("(display-mode: standalone)").matches;
-
-  // Detect in-app browsers
-  const ua = navigator.userAgent || "";
-  const isInApp = /Zalo|FBAN|FBAV|Instagram|Messenger|Telegram/i.test(ua);
-
-  const appWrap = document.getElementById("appWrap");
-  const installWrap = document.getElementById("installWrap");
-
-  if (isStandalone) {
-    // ✅ APP mode: dùng iframe để KHÔNG hiện thanh link
-    appWrap.style.display = "block";
-    document.getElementById("appFrame").src = WEBAPP;
-  } else {
-    // ✅ Browser mode: show hướng dẫn cài
-    installWrap.style.display = "block";
-
-    const $hint = document.getElementById("hint");
-    const $small = document.getElementById("small");
-    const $btnChrome = document.getElementById("openChrome");
-
-    document.getElementById("openNow").onclick = () => location.assign(WEBAPP);
-
-    if (isInApp) {
-      $btnChrome.style.display = "block";
-      $hint.innerHTML = "Bạn đang mở trong trình duyệt nhúng. Muốn <b>cài app</b> hãy mở bằng <b>Chrome</b>.";
-      $small.innerHTML = "Bấm <code>⋮</code> → <b>Mở bằng trình duyệt</b> / <b>Open in browser</b>.";
-      $btnChrome.onclick = () => window.open(location.href, "_blank", "noopener,noreferrer");
-    } else {
-      $hint.innerHTML = "Muốn cài thành app: mở menu Chrome <code>⋮</code> → <b>Install app</b> / <b>Thêm vào màn hình chính</b>.";
-      $small.innerHTML = "Nếu không thấy, hãy chờ vài giây hoặc tải lại 1 lần.";
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/rangshin-order/sw.js");
     }
-  }
-</script>
+
+    const WEBAPP = "https://script.google.com/macros/s/AKfycbw88IlRHEkiGzJisfKoOcydSirEHrLoRnzV01vw5DYL8iO916c-1CqADa73fm4x-htj/exec";
+    document.getElementById("appFrame").src = WEBAPP;
+
+    const ua = navigator.userAgent || "";
+    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+    const isInApp = /Zalo|FBAN|FBAV|Instagram|Messenger|Telegram/i.test(ua);
+
+    const hintBox = document.getElementById("hintBox");
+    const hintText = document.getElementById("hintText");
+    const btnGuide = document.getElementById("btnGuide");
+    const btnCloseHint = document.getElementById("btnCloseHint");
+
+    btnGuide.onclick = () => {
+      if (isInApp) {
+        hintText.innerHTML =
+          'Bạn đang mở trong <b>trình duyệt nhúng</b>.<br><br>' +
+          'Muốn cài app: bấm <b>⋮</b> → <b>Mở bằng trình duyệt</b> / <b>Open in browser</b>, rồi vào menu Chrome để thêm app ra màn hình chính.';
+      } else if (isIOS) {
+        hintText.innerHTML =
+          'Trên iPhone/iPad: bấm <b>Share</b> → <b>Add to Home Screen</b>.';
+      } else {
+        hintText.innerHTML =
+          'Trên Android Chrome: bấm <b>⋮</b> → <b>Install app</b> / <b>Thêm vào màn hình chính</b>.';
+      }
+      hintBox.style.display = "block";
+    };
+
+    btnCloseHint.onclick = () => {
+      hintBox.style.display = "none";
+    };
+  </script>
 </body>
 </html>
-
