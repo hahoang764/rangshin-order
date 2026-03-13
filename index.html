@@ -14,6 +14,23 @@
       height: 100%;
       background: #fff;
       overflow: hidden;
+      overscroll-behavior: none;
+      -webkit-overflow-scrolling: touch;
+      touch-action: manipulation;
+    }
+
+    body {
+      position: fixed;
+      inset: 0;
+    }
+
+    .frameWrap {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #fff;
     }
 
     #appFrame {
@@ -22,20 +39,24 @@
       height: 100%;
       display: block;
       background: #fff;
+      overflow: hidden;
+      -webkit-overflow-scrolling: touch;
     }
 
     .fabWrap {
       position: fixed;
       right: 14px;
-      bottom: 14px;
+      bottom: max(14px, env(safe-area-inset-bottom));
       z-index: 9999;
       display: flex;
       flex-direction: column;
       gap: 10px;
       align-items: flex-end;
+      pointer-events: none;
     }
 
     .fabBtn {
+      pointer-events: auto;
       border: 0;
       border-radius: 999px;
       padding: 12px 16px;
@@ -45,6 +66,8 @@
       color: #fff;
       box-shadow: 0 4px 14px rgba(0,0,0,.18);
       cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
 
     .fabBtn.secondary {
@@ -57,7 +80,7 @@
       position: fixed;
       left: 12px;
       right: 12px;
-      bottom: 70px;
+      bottom: calc(70px + env(safe-area-inset-bottom));
       z-index: 9999;
       background: #fff;
       border: 1px solid #e5e5e5;
@@ -66,9 +89,11 @@
       box-shadow: 0 8px 24px rgba(0,0,0,.12);
       font: 15px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       display: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .hintBox b { color: #8b1e1e; }
+
     .hintClose {
       margin-top: 10px;
       border: 0;
@@ -77,16 +102,21 @@
       border-radius: 12px;
       padding: 10px 14px;
       font-weight: 700;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
   </style>
 </head>
 <body>
 
-  <iframe
-    id="appFrame"
-    allow="clipboard-write"
-    referrerpolicy="no-referrer"
-  ></iframe>
+  <div class="frameWrap">
+    <iframe
+      id="appFrame"
+      allow="clipboard-write"
+      referrerpolicy="no-referrer"
+      loading="eager"
+    ></iframe>
+  </div>
 
   <div class="fabWrap">
     <button class="fabBtn secondary" id="btnGuide">Cài app</button>
@@ -103,7 +133,8 @@
     }
 
     const WEBAPP = "https://script.google.com/macros/s/AKfycbw88IlRHEkiGzJisfKoOcydSirEHrLoRnzV01vw5DYL8iO916c-1CqADa73fm4x-htj/exec";
-    document.getElementById("appFrame").src = WEBAPP;
+    const appFrame = document.getElementById("appFrame");
+    appFrame.src = WEBAPP;
 
     const ua = navigator.userAgent || "";
     const isIOS = /iPhone|iPad|iPod/i.test(ua);
@@ -132,6 +163,8 @@
     btnCloseHint.onclick = () => {
       hintBox.style.display = "none";
     };
+
+    document.addEventListener("touchmove", function(){}, { passive: true });
   </script>
 </body>
 </html>
