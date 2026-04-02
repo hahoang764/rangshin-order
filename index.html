@@ -22,6 +22,7 @@
     body {
       position: fixed;
       inset: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
 
     .frameWrap {
@@ -41,6 +42,77 @@
       background: #fff;
       overflow: hidden;
       -webkit-overflow-scrolling: touch;
+    }
+
+    .bootSplash {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 24px;
+      text-align: center;
+      transition: opacity .28s ease, visibility .28s ease;
+    }
+
+    .bootSplash.hide {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .bootLogo {
+      width: 88px;
+      height: 88px;
+      object-fit: contain;
+      margin-bottom: 14px;
+      border-radius: 20px;
+    }
+
+    .bootTitle {
+      font-size: 22px;
+      font-weight: 800;
+      color: #8b1e1e;
+      margin-bottom: 6px;
+      letter-spacing: .2px;
+    }
+
+    .bootSub {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 18px;
+    }
+
+    .bootDots {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bootDot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #d9b4b4;
+      animation: bootBounce 1.05s infinite ease-in-out;
+    }
+
+    .bootDot:nth-child(2) { animation-delay: .12s; }
+    .bootDot:nth-child(3) { animation-delay: .24s; }
+
+    @keyframes bootBounce {
+      0%, 80%, 100% {
+        transform: scale(.7);
+        opacity: .45;
+      }
+      40% {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
 
     .fabWrap {
@@ -118,6 +190,21 @@
     ></iframe>
   </div>
 
+  <div class="bootSplash" id="bootSplash">
+    <img
+      class="bootLogo"
+      src="https://raw.githubusercontent.com/hahoang764/rangshin-assets/main/icon.png"
+      alt="RANGSHIN"
+    >
+    <div class="bootTitle">RANGSHIN</div>
+    <div class="bootSub">Đang mở ứng dụng…</div>
+    <div class="bootDots" aria-hidden="true">
+      <span class="bootDot"></span>
+      <span class="bootDot"></span>
+      <span class="bootDot"></span>
+    </div>
+  </div>
+
   <div class="fabWrap">
     <button class="fabBtn secondary" id="btnGuide">Cài app</button>
   </div>
@@ -133,8 +220,9 @@
     }
 
     const WEBAPP = "https://script.google.com/macros/s/AKfycbySwXH-okG4IshKky0_mhmN749eB5AKgqxeuho7DL7Me-9IOCI-V1lPxarNXjJC7aMJ/exec";
+
     const appFrame = document.getElementById("appFrame");
-    appFrame.src = WEBAPP;
+    const bootSplash = document.getElementById("bootSplash");
 
     const ua = navigator.userAgent || "";
     const isIOS = /iPhone|iPad|iPod/i.test(ua);
@@ -144,6 +232,25 @@
     const hintText = document.getElementById("hintText");
     const btnGuide = document.getElementById("btnGuide");
     const btnCloseHint = document.getElementById("btnCloseHint");
+
+    let splashHidden = false;
+
+    function hideSplash() {
+      if (splashHidden) return;
+      splashHidden = true;
+      bootSplash.classList.add("hide");
+    }
+
+    appFrame.addEventListener("load", function () {
+      // chờ thêm 1 nhịp rất ngắn để iframe kịp vẽ frame đầu tiên
+      setTimeout(hideSplash, 120);
+    });
+
+    // fallback: nếu vì lý do nào đó load event chậm/lệch thì vẫn không bị treo splash quá lâu
+    setTimeout(hideSplash, 4500);
+
+    // bắt đầu tải app
+    appFrame.src = WEBAPP;
 
     btnGuide.onclick = () => {
       if (isInApp) {
